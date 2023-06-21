@@ -21,8 +21,8 @@ async function init(){
         name: "choice",
         choices:[
             "view all departments",
-            // "view all roles",
-            // "view all employees", 
+            "view all roles",
+            "view all employees", 
             // "add a department",
             // "add a role",
             // "add an employee",
@@ -37,15 +37,31 @@ async function init(){
         case "quit":
             await quit()
             break;
+        case "view all roles":
+            await getRoles()
+            break;
+        case "view all employees":
+            await getEmployees()
+            break;    
     }
 }
 async function getDepartments (){
     const response = await query("select * from department")
     console.table(response)
     init()
-    }
-    function quit(){
-        process.exit()
-        return false
-    }
+}
+async function getRoles (){
+    const response = await query("select * from role")
+    console.table(response)
+    init()
+}
+async function getEmployees (){
+    const response = await query("select * from employee")
+    console.table(response)
+    init()
+}
+function quit(){
+    process.exit()
+    return false
+}
 init();
