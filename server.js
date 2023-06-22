@@ -23,14 +23,8 @@ async function init(){
             "view all employees", 
             "add a department",
             "add a role",
-            // "add an employee",
-            // "update an employee role",
-            // "Update an employee's manager",
-            // "View employees by manager",
-            // "View employees by department",
-            // "Remove a department",
-            // "Remove a role",
-            // "Remove an employee"
+            "add an employee",
+            "update an employee's role",
             "quit"
         ]
     }])
@@ -53,47 +47,33 @@ async function init(){
         case "add an employee":
             await addEmployee()
             break;
-        case "update an employee role":
+        case "update an employee's role":
             await updEmpRole()
             break;
-        // case "update an employee's manager":
-        //     await getRoles()
-        //     break;
-        // case "view employees by manager":
-        //     await getEmployees()
-        //     break;
-        // case "view employees by department":
-        //     await getRoles()
-        //     break;
-        // case "remove a department":
-        //     await getRoles()
-        //     break;
-        // case "remove a role":
-        //     await getRoles()
-        //     break;
-        // case "remove an employee":
-        //     await getRoles()
-        //     break;
         case "quit":
             await quit()
             break;   
     }
-}
+};
+
 async function getDepartments (){
     const response = await query("select * from department")
     console.table(response)
     init()
-}
+};
+
 async function getRoles (){
     const response = await query("select * from role")
     console.table(response)
     init()
-}
+};
+
 async function getEmployees (){
     const response = await query("select * from employee")
     console.table(response)
     init()
-}
+};
+
 const addDept = () => {
     return inquirer.prompt([
     {
@@ -188,16 +168,139 @@ const addRole = () => {
     });
 };
 
-async function addEmployee (){
-    const response = await query("INSERT INTO employee (first_name, last_name, role_id, manager_id)")
-    console.table(response)
-    init()
-}
-async function updEmpRole (){
-    const response = await query("update employees role")
-    console.table(response)
-    init()
-}
+const addEmployee = () => {
+    return inquirer.prompt([
+    {
+        type: "input",
+        name: "firstName",
+        message: "What is the employee's first name?",
+        validate: nameInput => {
+        if (nameInput) {
+            return true;
+        } else {
+            console.log("Please enter a name");
+            return false;
+        };
+        }
+    },
+    {
+        type: "input",
+        name: "lastName",
+        message: "What is the employee's last name?",
+        validate: nameInput => {
+        if (nameInput) {
+            return true;
+        } else {
+            console.log("Please enter a name");
+            return false;
+        };
+        }
+    }
+    ])
+    .then (answer => {
+    const params = [answer.firstName, answer.lastName];
+      const sql = `SELECT * FROM role`;
+    db.query(sql, (err, rows) => {
+        if (err) {
+        throw err;
+        }
+        const roles = rows.map(({title, id}) => ({name: title, value: id}));
+        inquirer.prompt([
+        {
+            type: "list",
+            name: "role",
+            message: "What is the role of this employee?",
+            choices: roles
+        }
+        ])
+        .then(roleAnswer => {
+        const role = roleAnswer.role;
+        params.push(role);
+          const sql = `SELECT * FROM employee`;
+        db.query(sql, (err, rows) => {
+            if (err) {
+            throw err;
+            }
+            const managers = rows.map(({first_name, last_name, id}) => ({name: `${first_name} ${last_name}`, value: id}));
+            managers.push({name: "No manager", value: null});
+            inquirer.prompt([
+            {
+                type: "list",
+                name: "manager",
+                message: "Who is this employee's manager?",
+                choices: managers
+            }
+            ])
+            .then(managerAnswer => {
+            const manager = managerAnswer.manager;
+            params.push(manager);
+            const sql = `INSERT INTO employee (first_name, last_name, role_id, manager_id)
+                VALUES (?, ?, ?, ?)`;
+            db.query(sql, params, (err) => {
+                if (err) {
+                throw err;
+                }
+                console.clear()
+                console.log("Employee added!");
+                return init();
+            });
+            });
+        });
+        });
+    });
+    });
+};
+
+const updEmpRole = () => {
+    const sql = `SELECT first_name, last_name, id FROM employee`
+        db.query(sql, (err, rows) => {
+        if (err) {
+        throw err;
+    }
+    const employees = rows.map(({first_name, last_name, id}) => ({name: `${first_name} ${last_name}`, value: id}));
+    inquirer.prompt([
+    {
+    type: "list",
+    name: "employee",
+    message: "Which employee's role would you like to update?",
+    choices: employees
+    }
+    ])
+    .then(employeeAnswer => {
+        const employee = employeeAnswer.employee;
+        const params = [employee];
+        const sql = `SELECT title, id FROM role`;
+        db.query(sql, (err, rows) => {
+        if (err) {
+        throw err;
+        }
+        const roles = rows.map(({title, id}) => ({name: title, value: id}));
+        inquirer.prompt([
+        {
+        type: "list",
+        name: "role",
+        message: "What is the new role of this employee?",
+        choices: roles
+        }
+        ])
+    .then(roleAnswer => {
+        const role = roleAnswer.role;
+        params.unshift(role);
+        const sql = `UPDATE employee SET role_id = ? WHERE id = ?`
+        db.query(sql, params, (err) => {
+        if (err) {
+        throw err;
+        }
+        console.clear()
+        console.log("Employee updated!");
+        return init();
+        });
+        });
+        });
+    });
+    });
+};
+
 function quit(){
     process.exit()
     return false
