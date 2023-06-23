@@ -1,6 +1,7 @@
 const inquirer = require('inquirer');
 const mysql = require('mysql2');
 const util = require('util');
+const figlet = require("figlet")
 const db = mysql.createConnection(
     {
     host: 'localhost',
@@ -13,6 +14,10 @@ const db = mysql.createConnection(
 const query = util.promisify(db.query).bind(db);
 
 async function init(){
+//console.clear()
+// figlet.text("HR System", function (err, data){
+//     console.log(data)
+// })
     const ans = await inquirer.prompt([{
         type:"list",
         message : "What would you like to do?",
@@ -25,6 +30,9 @@ async function init(){
             "add a role",
             "add an employee",
             "update an employee's role",
+            "delete a department",
+            "delete a role",
+            "delete an employee",
             "quit"
         ]
     }])
@@ -49,6 +57,15 @@ async function init(){
             break;
         case "update an employee's role":
             await updEmpRole()
+            break;
+        case "delete a department":
+            await deleteDept()
+            break;
+        case "delete a role":
+            await deleteRole()
+            break;
+        case "delete an employee":
+            await deleteEmployee()
             break;
         case "quit":
             await quit()
@@ -301,8 +318,102 @@ const updEmpRole = () => {
     });
 };
 
+const deleteDept = () => {
+    const sql = `SELECT * FROM department`
+    db.query(sql, (err, rows) => {
+    if (err) {
+    throw err;
+    }
+    const departments = rows.map(({name, id}) => ({name: name, value: id}));
+        inquirer.prompt([
+    {
+    type: "list",
+    name: "department",
+    message: "Which department would you like to delete?",
+    choices: departments
+    }
+    ])
+    .then(departmentAnswer => {
+        const department = departmentAnswer.department
+        const params = department;
+        const sql = `DELETE FROM department WHERE id = ?`
+            db.query(sql, params, (err) => {
+            if (err) {
+            throw err;
+        }
+        console.clear()
+        console.log("Department deleted!");
+            return init();
+        });
+    });
+    });
+};
+
+const deleteRole = () => {
+    const sql = `SELECT id, title FROM role`
+    db.query(sql, (err, rows) => {
+        if (err) {
+        throw err;
+    }
+    const roles = rows.map(({title, id}) => ({name: title, value: id}));
+    inquirer.prompt([
+    {
+    type: "list",
+    name: "role",
+    message: "Which role would you like to delete?",
+    choices: roles
+    }
+    ])
+    .then(roleAnswer => {
+        const role = roleAnswer.role
+        const params = role;
+        const sql = `DELETE FROM role WHERE id = ?`
+        db.query(sql, params, (err) => {
+            if (err) {
+            throw err;
+        }
+        console.clear()
+        console.log("Role deleted!");
+        return init();
+        });
+    });
+    });
+};
+
+const deleteEmployee = () => {
+    const sql = `SELECT first_name, last_name, id FROM employee`
+    db.query(sql, (err, rows) => {
+        if (err) {
+        throw err;
+    }
+    const employees = rows.map(({first_name, last_name, id}) => ({name: `${first_name} ${last_name}`, value: id}));
+    inquirer.prompt([
+    {
+    type: "list",
+    name: "employee",
+    message: "Which employee would you like to remove?",
+    choices: employees
+    }
+    ])
+    .then(employeeAnswer => {
+        const employee = employeeAnswer.employee
+        const params = employee;
+        const sql = `DELETE FROM employee WHERE id = ?`
+        db.query(sql, params, (err) => {
+            if (err) {
+            throw err;
+        }
+        console.clear()
+        console.log("Employee removed!");
+        return init();
+        });
+    });
+    });
+};
+
 function quit(){
     process.exit()
     return false
-}
+};
+
 init();
