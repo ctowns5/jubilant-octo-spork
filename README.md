@@ -40,5 +40,6 @@
   ![picture of the example logo](./assets/images/josroles.jpg)
   ## link to GitHub Repository: https://github.com/ctowns5/jubilant-octo-spork
 
-  ## link to walkthrough video: 
+  ## link to walkthrough video: https://drive.google.com/file/d/1ypdnHF5rLTcRtFd3qjZzcY7P8Uw23icu/view
+  
   
