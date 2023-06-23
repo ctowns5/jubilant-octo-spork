@@ -1,7 +1,6 @@
 const inquirer = require('inquirer');
 const mysql = require('mysql2');
 const util = require('util');
-const figlet = require("figlet")
 const db = mysql.createConnection(
     {
     host: 'localhost',
@@ -9,15 +8,12 @@ const db = mysql.createConnection(
     password: 'piFyP89%c2',
     database: 'emp_db'
     },
-    console.log(`Connected to the emp_db database.`)
+    console.log(`Connected to the emp_db database.`),
 );
+
 const query = util.promisify(db.query).bind(db);
 
 async function init(){
-//console.clear()
-// figlet.text("HR System", function (err, data){
-//     console.log(data)
-// })
     const ans = await inquirer.prompt([{
         type:"list",
         message : "What would you like to do?",
