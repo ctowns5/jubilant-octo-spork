@@ -20,7 +20,7 @@
   Install mysql, download or clone the repository, use the files in the db directory to build and seed the database, then you can run the app by typing node server.js in a terminal from the apps directory.
 
   ## Questions
-  ctowns5
+  contact GitHub user ctowns5 with any questions
 
   ## Contributing
   NA
@@ -41,5 +41,5 @@
   ## link to GitHub Repository: https://github.com/ctowns5/jubilant-octo-spork
 
   ## link to walkthrough video: https://drive.google.com/file/d/1ypdnHF5rLTcRtFd3qjZzcY7P8Uw23icu/view
-  
+
   
